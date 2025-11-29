@@ -213,6 +213,25 @@ button:active {opacity:0.7;}
 
 <body class="dark theme-dashboard">
 
+<!-- GLOBAL NOTIFICATION -->
+<div id="notify" style="
+  display:none;
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  max-width:90%;
+  background:#24C4FF;
+  color:#000;
+  padding:14px 20px;
+  border-radius:12px;
+  font-weight:700;
+  z-index:9999;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  text-align:center;
+  transition:opacity .4s;
+"></div>
+
 <!-- HEADER -->
 <div class="header">
   <div class="avatar">K</div>
@@ -670,6 +689,25 @@ function toggleTheme(){
 }
 
 function quickAdd(){openTab('tools');}
+
+/* NOTIFICATION HANDLING */
+function showNotify(text, color="#24C4FF") {
+    const box = document.getElementById("notify");
+    box.innerText = text;
+    box.style.background = color;
+    box.style.display = "block";
+    box.style.opacity = "1";
+
+    setTimeout(()=>{
+        box.style.opacity = "0";
+        setTimeout(()=>{ box.style.display="none"; }, 400);
+    }, 3000);
+}
+
+// Read ?msg= and ?error=
+const params = new URLSearchParams(window.location.search);
+if (params.get("msg")) showNotify(params.get("msg"), "#24C4FF");
+if (params.get("error")) showNotify(params.get("error"), "#ff4b4b");
 
 /* INIT */
 renderEspresso();

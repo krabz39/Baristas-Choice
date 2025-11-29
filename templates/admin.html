@@ -1,164 +1,383 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Control Center — Super Admin</title>
+
 <style>
+/* ===================== BASE ====================== */
 body {
-  background:#0A1822;
+  background:#07131c;
   color:white;
   font-family:"Inter",sans-serif;
-  padding:20px;
+  padding:15px;
+  margin:0;
 }
-h1 { text-align:center; color:#24C4FF; }
-.section-title {
-  font-size:22px;
+
+h1 {
+  text-align:center;
   color:#24C4FF;
-  margin-top:30px;
+  font-weight:900;
+  margin:0 0 10px;
 }
-.card {
-  background:#0f1e28;
-  padding:18px;
-  border-radius:12px;
-  margin-bottom:15px;
-}
-button, a.btn {
-  display:inline-block;
-  padding:8px 12px;
+
+a { text-decoration:none; }
+
+/* ===================== NOTIFICATION TOAST ====================== */
+.toast {
+  position:fixed;
+  top:-80px;
+  left:50%;
+  transform:translateX(-50%);
   background:#24C4FF;
   color:black;
-  text-decoration:none;
+  padding:14px 22px;
+  border-radius:10px;
+  font-weight:800;
+  font-size:16px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.4);
+  transition:0.4s ease;
+  z-index:9999;
+}
+.toast.error { background:#ff4b4b; color:white; }
+
+/* ===================== DASHBOARD CARDS ====================== */
+.dashboard-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:15px;
+  margin-bottom:25px;
+}
+
+.stat-card {
+  background:#0d1e2b;
+  padding:15px;
+  border-radius:14px;
+  text-align:center;
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);
+}
+.stat-card h3 {
+  margin:0;
+  font-size:16px;
+  color:#24C4FF;
+}
+.stat-card p {
+  margin:5px 0 0;
+  font-size:20px;
+  font-weight:700;
+}
+
+/* ===================== BUTTONS ====================== */
+.btn {
+  display:inline-block;
+  padding:10px 14px;
+  background:#24C4FF;
+  color:black;
   border-radius:8px;
   font-weight:bold;
-  margin-top:5px;
+  margin:5px 6px;
 }
+
+.btn-red { background:#ff4b4b; color:white; }
+.btn-yellow { background:#e8c27c; color:black; }
+.btn-green { background:#43d37f; color:black; }
+
+/* ===================== SECTIONS ====================== */
+.section-title {
+  font-size:20px;
+  color:#24C4FF;
+  margin:30px 0 10px;
+  font-weight:800;
+}
+
+/* ===================== CARDS ====================== */
+.card {
+  background:#0d1e2b;
+  padding:15px;
+  border-radius:14px;
+  margin-bottom:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* ===================== TABLE ====================== */
+.table-wrapper {
+  overflow-x:auto;
+}
+
 table {
   width:100%;
   border-collapse:collapse;
-  margin-top:10px;
+  min-width:650px;
 }
-td, th {
-  border-bottom:1px solid #333;
-  padding:8px;
+
+th, td {
+  border-bottom:1px solid #223;
+  padding:10px;
   font-size:14px;
 }
-.action {
+
+td a { color:#24C4FF; }
+
+/* ===================== BADGES ====================== */
+.role-badge {
+  padding:3px 8px;
+  border-radius:6px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.role-superadmin { background:#ff4b4b; color:white; }
+.role-admin { background:#24C4FF; color:black; }
+.role-user { background:#777; color:white; }
+
+.status-banned { color:#ff4b4b; font-weight:bold; }
+.status-active { color:#43d37f; font-weight:bold; }
+
+/* ===================== SEARCH ====================== */
+#search {
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  margin:15px 0;
+  background:#10202c;
+  color:white;
+  font-size:15px;
+}
+
+.highlight {
+  background:rgba(36,196,255,0.25);
+  padding:2px;
+  border-radius:4px;
+}
+
+/* ===================== COLLAPSIBLES ====================== */
+.collapsible {
+  background:#0d1e2b;
+  padding:14px;
+  border-radius:12px;
+  font-size:16px;
+  font-weight:700;
   color:#24C4FF;
-  text-decoration:none;
-  font-weight:bold;
+  width:100%;
+  border:none;
+  text-align:left;
+  cursor:pointer;
+  margin:5px 0;
+}
+
+.collapsible:hover {
+  background:#112534;
+}
+
+.collapsible::after {
+  content:"+";
+  float:right;
+  font-size:20px;
+}
+
+.collapsible.active::after {
+  content:"-";
+}
+
+.content {
+  display:none;
+  margin-bottom:10px;
+}
+
+/* MOBILE OPTIMIZATION */
+@media(max-width:480px){
+  th:nth-child(4), td:nth-child(4) { display:none; }
 }
 </style>
 </head>
 
 <body>
 
-<h1>Admin Dashboard</h1>
-<p style="text-align:center;">
-  <a class="btn" href="/">⬅ Back to App</a>
-</p>
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
 
-<!-- USERS -->
+<h1>Super Admin Dashboard</h1>
+
+<div style="text-align:center;">
+  <a class="btn" href="/">⬅ Back</a>
+  {% if session.admin == 2 %}
+  <a class="btn-yellow" href="/export">⬇ Export</a>
+  {% endif %}
+</div>
+
+<input id="search" placeholder="Search…" onkeyup="searchTable()">
+
+<!-- ===================== STAT CARDS ====================== -->
+<div class="dashboard-grid">
+  <div class="stat-card"><h3>Users</h3><p>{{ users|length }}</p></div>
+  <div class="stat-card"><h3>Admins</h3><p>{{ users|selectattr("is_admin")|list|length }}</p></div>
+  <div class="stat-card"><h3>Espresso</h3><p>{{ espresso|length }}</p></div>
+  <div class="stat-card"><h3>V60</h3><p>{{ v60|length }}</p></div>
+  <div class="stat-card"><h3>Milk</h3><p>{{ milk|length }}</p></div>
+  <div class="stat-card"><h3>Water</h3><p>{{ water|length }}</p></div>
+  <div class="stat-card"><h3>Journal</h3><p>{{ journal|length }}</p></div>
+</div>
+
+<!-- ===================== USERS SECTION ====================== -->
 <h2 class="section-title">Users</h2>
+
 <div class="card">
-<table>
-  <tr><th>ID</th><th>Username</th><th>Admin</th><th>Status</th><th>Actions</th></tr>
+<div class="table-wrapper">
+<table id="table">
+  <tr>
+    <th>ID</th>
+    <th>Username</th>
+    <th>Role</th>
+    <th>Status</th>
+    <th>Actions</th>
+  </tr>
+
   {% for u in users %}
   <tr>
     <td>{{ u.id }}</td>
     <td>{{ u.username }}</td>
-    <td>{{ "Yes" if u.is_admin else "No" }}</td>
-    <td>{{ "Banned" if u.banned else "Active" }}</td>
+
     <td>
-      {% if u.banned == 0 %}
-        <a class="action" href="/admin/ban/{{u.id}}">Ban</a>
+      {% if u.is_admin == 2 %}
+      <span class="role-badge role-superadmin">SUPER</span>
+      {% elif u.is_admin == 1 %}
+      <span class="role-badge role-admin">ADMIN</span>
       {% else %}
-        <a class="action" href="/admin/unban/{{u.id}}">Unban</a>
+      <span class="role-badge role-user">USER</span>
       {% endif %}
     </td>
+
+    <td>
+      {% if u.banned %}
+        <span class="status-banned">BANNED</span>
+      {% else %}
+        <span class="status-active">ACTIVE</span>
+      {% endif %}
+    </td>
+
+    <td>
+      {% if u.banned == 0 %}
+        <a class="btn-red" href="/admin/ban/{{u.id}}?msg=banned">Ban</a>
+      {% else %}
+        <a class="btn-green" href="/admin/unban/{{u.id}}?msg=unbanned">Unban</a>
+      {% endif %}
+
+      {% if session.admin == 2 and u.id != session.user_id %}
+        <a class="btn-red" href="/admin/delete_user/{{u.id}}?msg=deleted">Delete</a>
+      {% endif %}
+
+      {% if session.admin == 2 and u.is_admin == 0 %}
+        <a class="btn-yellow" href="/admin/promote/{{u.id}}?msg=promoted">Promote</a>
+      {% endif %}
+
+      {% if session.admin == 2 and u.is_admin == 1 %}
+        <a class="btn-yellow" href="/admin/demote/{{u.id}}?msg=demoted">Demote</a>
+      {% endif %}
+    </td>
+
   </tr>
   {% endfor %}
+
 </table>
+</div>
 </div>
 
-<!-- ESPRESSO -->
-<h2 class="section-title">Espresso Logs</h2>
-<div class="card">
-<table>
-  <tr><th>ID</th><th>User</th><th>Coffee</th><th>Actions</th></tr>
-  {% for e in espresso %}
-  <tr>
-    <td>{{e.id}}</td>
-    <td>{{e.user_id}}</td>
-    <td>{{e.coffee}}</td>
-    <td><a class="action" href="/admin/delete/espresso/{{e.id}}">Delete</a></td>
-  </tr>
-  {% endfor %}
-</table>
-</div>
+<!-- ===================== COLLAPSIBLE LOG SECTIONS ====================== -->
+{% set sections = {
+  "Espresso Logs": espresso,
+  "V60 Logs": v60,
+  "Milk Logs": milk,
+  "Water Profiles": water,
+  "Journal Entries": journal
+} %}
 
-<!-- V60 -->
-<h2 class="section-title">V60 Logs</h2>
-<div class="card">
-<table>
-  <tr><th>ID</th><th>User</th><th>Coffee</th><th>Actions</th></tr>
-  {% for v in v60 %}
-  <tr>
-    <td>{{v.id}}</td>
-    <td>{{v.user_id}}</td>
-    <td>{{v.coffee}}</td>
-    <td><a class="action" href="/admin/delete/v60/{{v.id}}">Delete</a></td>
-  </tr>
-  {% endfor %}
-</table>
-</div>
+{% for title, data in sections.items() %}
+<button class="collapsible">{{ title }} ({{data|length}})</button>
+<div class="content">
+  <div class="card">
+  <div class="table-wrapper">
+  <table>
+    <tr>
+      <th>ID</th><th>User</th>
+      {% if title != "Water Profiles" %}
+      <th>Info</th>
+      {% else %}
+      <th>GH</th>
+      {% endif %}
+      <th>Actions</th>
+    </tr>
 
-<!-- MILK -->
-<h2 class="section-title">Milk Logs</h2>
-<div class="card">
-<table>
-  <tr><th>ID</th><th>User</th><th>Type</th><th>Actions</th></tr>
-  {% for m in milk %}
-  <tr>
-    <td>{{m.id}}</td>
-    <td>{{m.user_id}}</td>
-    <td>{{m.milk_type}}</td>
-    <td><a class="action" href="/admin/delete/milk/{{m.id}}">Delete</a></td>
-  </tr>
-  {% endfor %}
-</table>
-</div>
+    {% for item in data %}
+    <tr>
+      <td>{{item.id}}</td>
+      <td>{{item.user_id}}</td>
 
-<!-- WATER -->
-<h2 class="section-title">Water Profiles</h2>
-<div class="card">
-<table>
-  <tr><th>ID</th><th>User</th><th>GH</th><th>Actions</th></tr>
-  {% for w in water %}
-  <tr>
-    <td>{{w.id}}</td>
-    <td>{{w.user_id}}</td>
-    <td>{{w.gh}}</td>
-    <td><a class="action" href="/admin/delete/water/{{w.id}}">Delete</a></td>
-  </tr>
-  {% endfor %}
-</table>
-</div>
+      {% if title == "Espresso Logs" %}
+      <td>{{item.coffee}}</td>
+      {% elif title == "V60 Logs" %}
+      <td>{{item.coffee}}</td>
+      {% elif title == "Milk Logs" %}
+      <td>{{item.milk_type}}</td>
+      {% elif title == "Water Profiles" %}
+      <td>{{item.gh}}</td>
+      {% elif title == "Journal Entries" %}
+      <td>{{item.title}}</td>
+      {% endif %}
 
-<!-- JOURNAL -->
-<h2 class="section-title">Journal Entries</h2>
-<div class="card">
-<table>
-  <tr><th>ID</th><th>User</th><th>Title</th><th>Actions</th></tr>
-  {% for j in journal %}
-  <tr>
-    <td>{{j.id}}</td>
-    <td>{{j.user_id}}</td>
-    <td>{{j.title}}</td>
-    <td><a class="action" href="/admin/delete/journal/{{j.id}}">Delete</a></td>
-  </tr>
-  {% endfor %}
-</table>
+      <td>
+        <a class="btn-red" href="/admin/delete/{{title.split()[0]|lower}}/{{item.id}}?msg=deleted">
+          Delete
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  </div>
+  </div>
 </div>
+{% endfor %}
+
+<script>
+/* ===================== SEARCH + HIGHLIGHT ====================== */
+function searchTable(){
+  let q = document.getElementById("search").value.toLowerCase();
+
+  document.querySelectorAll("#table tr").forEach(row=>{
+    let txt = row.innerText.toLowerCase();
+    row.style.display = txt.includes(q) ? "" : "none";
+  });
+}
+
+/* ===================== COLLAPSIBLES ====================== */
+document.querySelectorAll(".collapsible").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    btn.classList.toggle("active");
+    let content = btn.nextElementSibling;
+    content.style.display = content.style.display === "block" ? "none" : "block";
+  });
+});
+
+/* ===================== TOAST HANDLER ====================== */
+function showToast(msg, error=false){
+  let t = document.getElementById("toast");
+  t.innerText = msg;
+  if(error){ t.classList.add("error"); }
+  t.style.top = "20px";
+  setTimeout(()=>{ t.style.top="-80px"; }, 2500);
+}
+
+/* READ ?msg= IN URL */
+const params = new URLSearchParams(window.location.search);
+if(params.has("msg")){
+  let m = params.get("msg");
+  if(m === "banned") showToast("User Banned ❌", true);
+  if(m === "unbanned") showToast("User Unbanned ✅");
+  if(m === "deleted") showToast("User Deleted 🗑️", true);
+  if(m === "promoted") showToast("Promoted to Admin ⭐");
+  if(m === "demoted") showToast("Demoted to User ⚠");
+}
+</script>
 
 </body>
 </html>

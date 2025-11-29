@@ -1,79 +1,232 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Barista Login</title>
+
 <style>
+/* -------- Base -------- */
 body {
-  background:#0A1822;
+  background:#07131c;
   color:white;
   font-family:"Inter",sans-serif;
+  margin:0;
   padding:40px 20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  animation:fadeIn .6s ease;
 }
+
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(10px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* -------- Card -------- */
 .card {
-  background:#0f1e28;
-  padding:25px;
-  border-radius:16px;
-  max-width:400px;
-  margin:40px auto;
-  box-shadow:0 5px 15px rgba(0,0,0,0.3);
+  background:#0d1e2b;
+  padding:30px 25px;
+  border-radius:20px;
+  width:100%;
+  max-width:420px;
+  margin-top:25px;
+  box-shadow:0 8px 22px rgba(0,0,0,0.4);
+  animation:fadeIn .7s ease;
 }
+
+h1 {
+  font-size:26px;
+  font-weight:900;
+  color:#24C4FF;
+  text-align:center;
+  margin-bottom:10px;
+  letter-spacing:1px;
+}
+
+.title {
+  text-align:center;
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:18px;
+  color:#24C4FF;
+}
+
+/* -------- Inputs -------- */
 input {
   width:100%;
-  padding:14px;
-  margin:8px 0;
+  padding:15px;
+  margin:10px 0 4px 0;
   border:none;
-  border-radius:10px;
-  background:#0b1a26;
+  border-radius:12px;
+  background:#0a1a26;
   color:white;
   font-size:16px;
+  outline:none;
+  transition:0.2s;
 }
+
+input:focus {
+  background:#10293a;
+  box-shadow:0 0 0 1px #24C4FF;
+}
+
+/* Inline error text */
+.error-inline {
+  font-size:14px;
+  color:#ff4b4b;
+  margin-top:2px;
+  margin-bottom:6px;
+}
+
+/* -------- Buttons -------- */
 button {
   width:100%;
   padding:14px;
-  margin-top:10px;
+  margin-top:15px;
   background:#24C4FF;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   font-size:18px;
-  font-weight:bold;
+  font-weight:900;
   cursor:pointer;
+  color:black;
+  transition:0.2s;
 }
+
+button:hover {
+  transform:scale(1.02);
+  background:#29d1ff;
+}
+
+/* Links */
 a {
   color:#24C4FF;
   text-decoration:none;
+  font-weight:600;
 }
-h1 { text-align:center; font-size:26px; }
-.title { text-align:center; font-size:20px; margin-bottom:15px; }
+
+a:hover { text-decoration:underline; }
+
+.footer {
+  text-align:center;
+  margin-top:15px;
+  font-size:14px;
+  opacity:0.8;
+}
+
+/* GLOBAL POPUP NOTIFICATION */
+#notify {
+  display:none;
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  max-width:90%;
+  background:#24C4FF;
+  color:#000;
+  padding:14px 20px;
+  border-radius:12px;
+  font-weight:700;
+  z-index:9999;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  text-align:center;
+  transition:opacity .4s;
+}
+
+/* Mobile Fix */
+@media(max-width:480px){
+  .card { padding:25px 20px; }
+  h1 { font-size:23px; }
+  .title { font-size:20px; }
+}
 </style>
 </head>
 
 <body>
 
-<h1>☕ Barista Intelligence System</h1>
+<!-- POPUP NOTIFICATION -->
+<div id="notify"></div>
+
+<h1>☕ Kenyankrabz Barista Intelligence System</h1>
 
 <div class="card">
 
   {% if mode == "login" %}
-    <div class="title">Login</div>
+  
+    <div class="title">Welcome Back</div>
+
     <form method="POST">
+
       <input name="username" placeholder="Username" required>
+      {% if error_type == "username" %}
+        <div class="error-inline">❌ Username not found</div>
+      {% endif %}
+
       <input name="password" type="password" placeholder="Password" required>
+      {% if error_type == "password" %}
+        <div class="error-inline">❌ Incorrect password</div>
+      {% endif %}
+
+      {% if error_type == "banned" %}
+        <div class="error-inline">🚫 Your account is banned</div>
+      {% endif %}
+
+      {% if error_type == "unauthorized" %}
+        <div class="error-inline">⚠ Unauthorized — Admin only</div>
+      {% endif %}
+
       <button>Login</button>
     </form>
-    <p style="margin-top:15px;">New user? <a href="/register">Create account</a></p>
+
+    <div class="footer">
+      New here? <a href="/register">Create account</a>
+    </div>
 
   {% else %}
+
     <div class="title">Create Account</div>
+
     <form method="POST">
       <input name="username" placeholder="Choose username" required>
       <input name="password" type="password" placeholder="Choose password" required>
       <button>Register</button>
     </form>
-    <p style="margin-top:15px;">Already have an account? <a href="/login">Login</a></p>
+
+    <div class="footer">
+      Already registered? <a href="/login">Login</a>
+    </div>
+
   {% endif %}
 
 </div>
+
+<script>
+/* POPUP NOTIFICATION HANDLER */
+function showNotify(text, color="#24C4FF") {
+    const box = document.getElementById("notify");
+    box.innerText = text;
+    box.style.background = color;
+    box.style.display = "block";
+    box.style.opacity = "1";
+
+    setTimeout(()=>{
+        box.style.opacity = "0";
+        setTimeout(()=>{ box.style.display="none"; }, 400);
+    }, 3000);
+}
+
+/* Read ?error= and convert to popup */
+const params = new URLSearchParams(window.location.search);
+if (params.get("error")) {
+    const e = params.get("error");
+
+    if (e === "username") showNotify("❌ Username not found", "#ff4b4b");
+    if (e === "password") showNotify("❌ Wrong password", "#ff4b4b");
+    if (e === "banned") showNotify("🚫 Your account is banned", "#ff4b4b");
+    if (e === "unauthorized") showNotify("⚠ Unauthorized access", "#ffb84b");
+}
+</script>
 
 </body>
 </html>
