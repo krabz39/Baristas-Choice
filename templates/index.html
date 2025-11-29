@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Barista Intelligence System — Level 9</title>
+<link rel="manifest" href="/static/manifest.json">
+
+<style>
+/* ==========================================================
+   COFFEE COLOR SYSTEM
+========================================================== */
+:root {
+  --blue:#24C4FF;         /* General accent */
+  --green:#43d37f;        /* V60 */
+  --brown:#9c674a;        /* Espresso */
+  --cream:#e8c27c;        /* Milk */
+  --red:#ff4b4b;
+  --dark:#021018;
+  --light:#ffffff;
+  --card:#ffffff;
+  --bg-dark:#0A1822;
+  --bg-light:#ffffff;
+  --text-dark:#222;
+  --text-light:#f4f4f4;
+
+  --accent:var(--blue); /* Default */
+}
+
+/* THEME ACCENTS (Option 3) */
+body.theme-dashboard { --accent:var(--blue); }
+body.theme-espresso { --accent:var(--brown); }
+body.theme-v60      { --accent:var(--green); }
+body.theme-milk     { --accent:var(--cream); }
+body.theme-tools    { --accent:var(--blue); }
+body.theme-pro      { --accent:var(--blue); }
+body.theme-ai       { --accent:var(--blue); }
+body.theme-scanner  { --accent:var(--blue); }
+
+/* Dark / Light Modes */
+body.dark {
+  --bg:var(--bg-dark);
+  --text:var(--text-light);
+  --card-bg:#0b1f2c;
+}
+body.light {
+  --bg:var(--bg-light);
+  --text:var(--text-dark);
+  --card-bg:#ffffff;
+}
+
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Inter",sans-serif;
+  padding-bottom:90px;
+  transition:.25s;
+  overflow-x:hidden;
+}
+
+/* Mobile Fixes */
+* { box-sizing:border-box; max-width:100%; }
+
+/* ==========================================================
+   CARDS
+========================================================== */
+.card {
+  background:var(--card-bg);
+  color:var(--text);
+  padding:18px;
+  border-radius:14px;
+  margin-bottom:16px;
+  box-shadow:0 4px 9px rgba(0,0,0,0.25);
+}
+
+/* Titles */
+.section-title {
+  font-size:22px;
+  font-weight:900;
+  color:var(--accent);
+  margin:20px 0 10px;
+  text-align:left;
+}
+
+/* Inputs */
+input,select,textarea {
+  width:100%;
+  margin:7px 0;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #444;
+  background:#10202c;
+  color:white;
+  font-size:15px;
+}
+
+button {
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  background:var(--accent);
+  color:black;
+  font-size:16px;
+  font-weight:bold;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+}
+button:active {opacity:0.7;}
+
+/* ==========================================================
+   NAVIGATION (Mobile Optimized)
+========================================================== */
+.navbar {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  height:70px;
+  background:#04121c;
+  display:flex;
+  justify-content:space-between;
+  padding:0 10px;
+  align-items:center;
+  border-top:1px solid rgba(255,255,255,0.2);
+  z-index:999;
+  overflow-x:auto;
+}
+
+.nav-btn {
+  color:var(--accent);
+  text-decoration:none;
+  font-size:13px;
+  font-weight:600;
+  padding:6px 10px;
+  white-space:nowrap;
+}
+
+/* Floating add button */
+.quick-add {
+  position:fixed;
+  bottom:100px;
+  right:22px;
+  width:65px;
+  height:65px;
+  border-radius:50%;
+  background:var(--accent);
+  color:black;
+  font-size:36px;
+  font-weight:900;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 6px 15px rgba(0,0,0,0.25);
+  z-index:999;
+  cursor:pointer;
+}
+
+/* Header */
+.header {
+  text-align:center;
+  padding:25px 10px 10px;
+}
+
+.avatar {
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:var(--accent);
+  color:black;
+  font-size:32px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:0 auto 10px;
+  font-weight:900;
+}
+
+.section {padding:15px; display:none;}
+.active-section {display:block;}
+
+.badge {
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:6px;
+  background:var(--green);
+  color:black;
+  font-size:13px;
+  margin-bottom:8px;
+}
+
+.record-card {
+  background:var(--card-bg);
+  padding:15px;
+  border-radius:14px;
+  margin-bottom:14px;
+  color:var(--text);
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+/* Scanner */
+.video-box { width:100%; background:#000; border-radius:14px; overflow:hidden; margin-top:10px; }
+.video-box video { width:100%; }
+
+@media(max-width:480px){
+  h1 {font-size:20px;}
+  .section-title {font-size:20px;}
+  .navbar {height:65px;}
+  .nav-btn {font-size:12px;}
+}
+</style>
+</head>
+
+<body class="dark theme-dashboard">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="avatar">K</div>
+  <h1 style="color:var(--accent);font-weight:900;">Kenyankrabz Barista Intelligence System</h1>
+  <button onclick="toggleTheme()" style="margin-top:15px;">🌗 Toggle Theme</button>
+</div>
+
+<!-- NAVIGATION -->
+<div class="navbar">
+  <a class="nav-btn" onclick="openTab('dashboard')">Dashboard</a>
+  <a class="nav-btn" onclick="openTab('espresso')">Espresso</a>
+  <a class="nav-btn" onclick="openTab('v60')">V60</a>
+  <a class="nav-btn" onclick="openTab('milk')">Milk</a>
+  <a class="nav-btn" onclick="openTab('tools')">Tools</a>
+  <a class="nav-btn" onclick="openTab('pro')">PRO</a>
+  <a class="nav-btn" onclick="openTab('ai')">AI</a>
+  <a class="nav-btn" onclick="openTab('scanner')">Scan</a>
+</div>
+
+<div class="quick-add" onclick="quickAdd()">+</div>
+
+<!-- ==========================================================
+     DASHBOARD
+========================================================== -->
+<div id="dashboard" class="section active-section">
+  <h2 class="section-title">📊 Today’s Summary</h2>
+
+  <div class="card">
+    <p>☕ Espresso shots: <b id="dash-espresso">0</b></p>
+    <p>🪣 V60 brews: <b id="dash-v60">0</b></p>
+    <p>🥛 Milk sessions: <b id="dash-milk">0</b></p>
+    <p>📘 Journal entries: <b id="dash-journal">0</b></p>
+  </div>
+
+  <h2 class="section-title">⭐ Favorites</h2>
+  <div id="fav-container"></div>
+
+  <h2 class="section-title">🔥 Skill Tracker</h2>
+  <div class="card">
+    <canvas id="skillChart" height="150"></canvas>
+  </div>
+
+  <h2 class="section-title">📈 Analytics</h2>
+  <div class="card">
+    <canvas id="analyticsChart" height="150"></canvas>
+  </div>
+</div>
+
+<!-- ==========================================================
+     ESPRESSO
+========================================================== -->
+<div id="espresso" class="section">
+  <h2 class="section-title">⚡ Espresso Calibration</h2>
+
+  <div class="card">
+    <form action="/espresso/add" method="POST">
+      <input name="coffee" placeholder="Coffee name / origin" required>
+      <input name="dose" type="number" step="0.1" placeholder="Dose (g)" required>
+      <input name="yield" type="number" step="0.1" placeholder="Yield (g/ml)" required>
+      <input name="time" type="number" step="0.1" placeholder="Time (sec)" required>
+      <input name="grind" placeholder="Grind setting">
+      <input name="temp" type="number" step="0.1" placeholder="Temp °C">
+      <input name="pressure" type="number" step="0.1" placeholder="Pressure (bar)">
+      <textarea name="notes" placeholder="Taste notes…"></textarea>
+      <button>Save Espresso Log</button>
+    </form>
+  </div>
+
+  <h3 class="section-title">Recent Espresso Shots</h3>
+  <div id="espresso-list"></div>
+</div>
+
+<!-- ==========================================================
+     V60
+========================================================== -->
+<div id="v60" class="section">
+  <h2 class="section-title">☕ V60 Brew Log</h2>
+
+  <div class="card">
+    <form action="/v60/add" method="POST">
+      <input name="coffee" placeholder="Coffee name" required>
+      <input name="dose" type="number" step="0.1" placeholder="Dose (g)">
+      <input name="water" type="number" step="0.1" placeholder="Water (ml)">
+      <input name="ratio" placeholder="Ratio 1:15">
+      <input name="grind" placeholder="Grind">
+      <input name="temp" type="number" placeholder="Temp °C">
+      <input name="bloom_weight" type="number" placeholder="Bloom (g)">
+      <input name="bloom_time" type="number" placeholder="Bloom time">
+      <textarea name="pours" placeholder="Pour sequence"></textarea>
+      <input name="drawdown" type="number" placeholder="Drawdown (sec)">
+      <textarea name="notes" placeholder="Taste notes"></textarea>
+      <input name="rating" type="number" min="1" max="10" placeholder="Rating">
+      <button>Save V60 Log</button>
+    </form>
+  </div>
+
+  <h3 class="section-title">Recent V60 Brews</h3>
+  <div id="v60-list"></div>
+</div>
+
+<!-- ==========================================================
+     MILK
+========================================================== -->
+<div id="milk" class="section">
+  <h2 class="section-title">🥛 Milk Log</h2>
+
+  <div class="card">
+    <form action="/milk/add" method="POST">
+      <input name="milk_type" placeholder="Milk type">
+      <input name="pitcher" placeholder="Pitcher size">
+      <input name="stretch_time" type="number" placeholder="Stretch (sec)">
+      <input name="target_temp" type="number" placeholder="Temp °C">
+      <input name="art_shape" placeholder="Art shape">
+      <textarea name="notes" placeholder="Notes"></textarea>
+      <button>Save Milk Log</button>
+    </form>
+  </div>
+
+  <h3 class="section-title">Recent Milk Sessions</h3>
+  <div id="milk-list"></div>
+</div>
+
+<!-- ==========================================================
+     WATER
+========================================================== -->
+<div id="water" class="section">
+  <h2 class="section-title">💧 Water Chemistry</h2>
+
+  <div class="card">
+    <form action="/water/add" method="POST">
+      <input name="gh" type="number" placeholder="GH">
+      <input name="kh" type="number" placeholder="KH">
+      <input name="tds" type="number" placeholder="TDS">
+      <textarea name="additives" placeholder="Additives"></textarea>
+      <textarea name="notes" placeholder="Notes"></textarea>
+      <button>Save Water Profile</button>
+    </form>
+  </div>
+
+  <div id="water-list"></div>
+</div>
+
+<!-- ==========================================================
+     JOURNAL
+========================================================== -->
+<div id="journal" class="section">
+  <h2 class="section-title">📝 Journal</h2>
+
+  <div class="card">
+    <form action="/journal/add" method="POST">
+      <input name="title" placeholder="Title">
+      <textarea name="body" placeholder="What you learned…"></textarea>
+      <input name="tags" placeholder="#espresso #milk…">
+      <button>Save Note</button>
+    </form>
+  </div>
+
+  <div id="journal-list"></div>
+</div>
+
+<!-- ==========================================================
+     TOOLS
+========================================================== -->
+<div id="tools" class="section">
+  <h2 class="section-title">🧰 Tools</h2>
+  <div id="tools-container"></div>
+</div>
+
+<!-- ==========================================================
+     PRO
+========================================================== -->
+<div id="pro" class="section">
+  <h2 class="section-title">🏆 PRO MODE</h2>
+  <div class="card">
+    <p>Advanced features coming soon…</p>
+  </div>
+</div>
+
+<!-- ==========================================================
+     AI
+========================================================== -->
+<div id="ai" class="section">
+  <h2 class="section-title">🤖 AI Advisor</h2>
+
+  <div class="card">
+    <h3>Espresso Prediction</h3>
+    <input id="ai-dose" placeholder="Dose (g)">
+    <input id="ai-yield" placeholder="Yield (g)">
+    <input id="ai-time" placeholder="Time (sec)">
+    <button onclick="predictEspresso()">Predict</button>
+    <p id="ai-espresso-result"></p>
+  </div>
+
+  <div class="card">
+    <h3>V60 Prediction</h3>
+    <input id="ai-v60-dose" placeholder="Dose">
+    <input id="ai-v60-water" placeholder="Water">
+    <input id="ai-v60-drawdown" placeholder="Drawdown">
+    <button onclick="predictV60()">Predict</button>
+    <p id="ai-v60-result"></p>
+  </div>
+
+  <div class="card">
+    <h3>Milk Texture</h3>
+    <input id="ai-milk-stretch" placeholder="Stretch time">
+    <button onclick="predictMilk()">Analyze</button>
+    <p id="ai-milk-result"></p>
+  </div>
+
+  <div class="card">
+    <h3>Water Advisor</h3>
+    <input id="ai-water-gh" placeholder="GH">
+    <input id="ai-water-kh" placeholder="KH">
+    <button onclick="predictWater()">Evaluate</button>
+    <p id="ai-water-result"></p>
+  </div>
+</div>
+
+<!-- ==========================================================
+     SCANNER
+========================================================== -->
+<div id="scanner" class="section">
+  <h2 class="section-title">📷 Level-9 Scanner</h2>
+
+  <div class="card">
+    <h3>Live Extraction Flow Scanner</h3>
+    <button onclick="startCamera()">Start Camera</button>
+    <div class="video-box">
+      <video id="scanVideo" autoplay muted playsinline></video>
+    </div>
+    <button onclick="analyzeFlow()">Analyze Flow</button>
+    <p id="flow-result"></p>
+  </div>
+
+  <div class="card">
+    <h3>Crema Color Analyzer</h3>
+    <button onclick="analyzeCrema()">Analyze Crema</button>
+    <p id="crema-result"></p>
+  </div>
+
+  <div class="card">
+    <h3>Latte Art Symmetry</h3>
+    <button onclick="analyzeLatteArt()">Analyze Pattern</button>
+    <p id="latte-result"></p>
+  </div>
+</div>
+
+<!-- ==========================================================
+     SCRIPTS
+========================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+/* LOAD DATA */
+let espressoData = JSON.parse(`{{ espresso | tojson | safe }}`);
+let v60Data      = JSON.parse(`{{ v60 | tojson | safe }}`);
+let milkData     = JSON.parse(`{{ milk | tojson | safe }}`);
+let waterData    = JSON.parse(`{{ water | tojson | safe }}`);
+let journalData  = JSON.parse(`{{ journal | tojson | safe }}`);
+
+/* RENDERERS */
+function renderEspresso() {
+  let box = document.getElementById("espresso-list");
+  box.innerHTML = "";
+  espressoData.forEach(e=>{
+    box.innerHTML += `
+      <div class='record-card'>
+        <div class='badge'>Espresso</div>
+        <h3>${e.coffee}</h3>
+        <p>Dose: ${e.dose}g — Yield: ${e.yield_out}g</p>
+        <p>Time: ${e.time_sec}s | Grind: ${e.grind}</p>
+        <p><b>Diagnosis:</b> ${e.diagnostics}</p>
+        <p>${e.notes}</p>
+      </div>`;
+  });
+}
+
+function renderV60() {
+  let b=document.getElementById("v60-list");
+  b.innerHTML="";
+  v60Data.forEach(v=>{
+    b.innerHTML+=`
+      <div class='record-card'>
+        <div class='badge'>V60</div>
+        <h3>${v.coffee}</h3>
+        <p>Dose: ${v.dose}g | Water: ${v.water}ml</p>
+        <p>Drawdown: ${v.drawdown}s</p>
+        <p><b>Rating:</b> ${v.rating}</p>
+      </div>`;
+  });
+}
+
+function renderMilk(){
+  let b=document.getElementById("milk-list");
+  b.innerHTML="";
+  milkData.forEach(m=>{
+    b.innerHTML+=`
+      <div class='record-card'>
+        <div class='badge'>Milk</div>
+        <h3>${m.milk_type}</h3>
+        <p>Pitcher: ${m.pitcher}</p>
+        <p>Stretch: ${m.stretch_time}s</p>
+      </div>`;
+  });
+}
+
+function renderWater() {
+  let b=document.getElementById("water-list");
+  b.innerHTML="";
+  waterData.forEach(w=>{
+    b.innerHTML+=`
+      <div class='record-card'>
+        <div class='badge'>Water</div>
+        <p>GH: ${w.gh} | KH: ${w.kh} | TDS: ${w.tds}</p>
+      </div>`;
+  });
+}
+
+function renderJournal(){
+  let b=document.getElementById("journal-list");
+  b.innerHTML="";
+  journalData.forEach(j=>{
+    b.innerHTML+=`
+      <div class='record-card'>
+        <div class='badge'>Journal</div>
+        <h3>${j.title}</h3>
+        <p>${j.body}</p>
+        <p style='color:var(--accent)'>Tags: ${j.tags}</p>
+      </div>`;
+  });
+}
+
+/* DASHBOARD */
+function updateDashboard(){
+  document.getElementById("dash-espresso").innerText = espressoData.length;
+  document.getElementById("dash-v60").innerText = v60Data.length;
+  document.getElementById("dash-milk").innerText = milkData.length;
+  document.getElementById("dash-journal").innerText = journalData.length;
+}
+
+/* CHARTS */
+function skillTracker(){
+  let ctx=document.getElementById("skillChart");
+  new Chart(ctx,{
+    type:"radar",
+    data:{
+      labels:["Espresso","V60","Milk"],
+      datasets:[{
+        label:"Skills",
+        data:[espressoData.length*2,v60Data.length*1.5,milkData.length*1.2],
+        backgroundColor:"rgba(36,196,255,0.3)",
+        borderColor:"#24C4FF"
+      }]
+    }
+  });
+}
+
+function analyticsChart(){
+  let ctx=document.getElementById("analyticsChart");
+  new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels:["Espresso","V60","Milk","Water","Journal"],
+      datasets:[{
+        data:[
+          espressoData.length,
+          v60Data.length,
+          milkData.length,
+          waterData.length,
+          journalData.length
+        ],
+        backgroundColor:[
+          "#24C4FF",
+          "#43d37f",
+          "#9c674a",
+          "#26A69A",
+          "#ff4b4b"
+        ]
+      }]
+    }
+  });
+}
+
+/* AI ENGINE — (unchanged) */
+function predictEspresso(){
+  let dose=+document.getElementById("ai-dose").value;
+  let y=+document.getElementById("ai-yield").value;
+  let t=+document.getElementById("ai-time").value;
+
+  let r=y/dose; let msg="";
+  if(r<1.5) msg="🔵 Under-extracted";
+  else if(r>2.4) msg="🔴 Over-extracted";
+  else msg="🟢 Balanced";
+  if(t<25) msg+="\nFast → Grind finer.";
+  if(t>33) msg+="\nSlow → Grind coarser.";
+
+  document.getElementById("ai-espresso-result").innerText = msg;
+}
+
+function predictV60(){
+  let d=+document.getElementById("ai-v60-dose").value;
+  let w=+document.getElementById("ai-v60-water").value;
+  let draw=+document.getElementById("ai-v60-drawdown").value;
+
+  let r=w/d; let msg="";
+  if(draw<2*r) msg="🔵 Fast (under)";
+  else if(draw>3.5*r) msg="🔴 Slow (over)";
+  else msg="🟢 Balanced";
+
+  document.getElementById("ai-v60-result").innerText = msg;
+}
+
+function predictMilk(){
+  let s=+document.getElementById("ai-milk-stretch").value;
+  let msg="";
+  if(s<2) msg="Flat milk.";
+  else if(s>7) msg="Bubbles.";
+  else msg="Silky foam.";
+  document.getElementById("ai-milk-result").innerText = msg;
+}
+
+function predictWater(){
+  let gh=+document.getElementById("ai-water-gh").value;
+  let kh=+document.getElementById("ai-water-kh").value;
+  let msg="";
+  if(gh<30) msg="Low GH → hollow flavors.";
+  else if(gh>90) msg="High GH → harsh.";
+  else msg="GH good.";
+  document.getElementById("ai-water-result").innerText = msg;
+}
+
+/* CAMERA */
+let stream;
+async function startCamera(){
+  stream = await navigator.mediaDevices.getUserMedia({video:true});
+  document.getElementById("scanVideo").srcObject = stream;
+}
+function analyzeFlow(){ document.getElementById("flow-result").innerText="🟢 Flow looks steady."; }
+function analyzeCrema(){ document.getElementById("crema-result").innerText="🟤 Crema: medium density."; }
+function analyzeLatteArt(){ document.getElementById("latte-result").innerText="✨ Symmetry looks good."; }
+
+/* NAVIGATION — UPDATED FOR THEME SWITCHING */
+function openTab(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active-section'));
+  document.getElementById(id).classList.add('active-section');
+
+  /* Apply theme */
+  document.body.className = `dark theme-${id}`;
+
+  scrollTo(0,0);
+}
+
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  document.body.classList.toggle('light');
+}
+
+function quickAdd(){openTab('tools');}
+
+/* INIT */
+renderEspresso();
+renderV60();
+renderMilk();
+renderWater();
+renderJournal();
+updateDashboard();
+skillTracker();
+analyticsChart();
+</script>
+
+</body>
+</html>

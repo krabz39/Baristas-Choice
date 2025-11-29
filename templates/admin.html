@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard</title>
+<style>
+body {
+  background:#0A1822;
+  color:white;
+  font-family:"Inter",sans-serif;
+  padding:20px;
+}
+h1 { text-align:center; color:#24C4FF; }
+.section-title {
+  font-size:22px;
+  color:#24C4FF;
+  margin-top:30px;
+}
+.card {
+  background:#0f1e28;
+  padding:18px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+button, a.btn {
+  display:inline-block;
+  padding:8px 12px;
+  background:#24C4FF;
+  color:black;
+  text-decoration:none;
+  border-radius:8px;
+  font-weight:bold;
+  margin-top:5px;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+td, th {
+  border-bottom:1px solid #333;
+  padding:8px;
+  font-size:14px;
+}
+.action {
+  color:#24C4FF;
+  text-decoration:none;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Admin Dashboard</h1>
+<p style="text-align:center;">
+  <a class="btn" href="/">⬅ Back to App</a>
+</p>
+
+<!-- USERS -->
+<h2 class="section-title">Users</h2>
+<div class="card">
+<table>
+  <tr><th>ID</th><th>Username</th><th>Admin</th><th>Status</th><th>Actions</th></tr>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.id }}</td>
+    <td>{{ u.username }}</td>
+    <td>{{ "Yes" if u.is_admin else "No" }}</td>
+    <td>{{ "Banned" if u.banned else "Active" }}</td>
+    <td>
+      {% if u.banned == 0 %}
+        <a class="action" href="/admin/ban/{{u.id}}">Ban</a>
+      {% else %}
+        <a class="action" href="/admin/unban/{{u.id}}">Unban</a>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<!-- ESPRESSO -->
+<h2 class="section-title">Espresso Logs</h2>
+<div class="card">
+<table>
+  <tr><th>ID</th><th>User</th><th>Coffee</th><th>Actions</th></tr>
+  {% for e in espresso %}
+  <tr>
+    <td>{{e.id}}</td>
+    <td>{{e.user_id}}</td>
+    <td>{{e.coffee}}</td>
+    <td><a class="action" href="/admin/delete/espresso/{{e.id}}">Delete</a></td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<!-- V60 -->
+<h2 class="section-title">V60 Logs</h2>
+<div class="card">
+<table>
+  <tr><th>ID</th><th>User</th><th>Coffee</th><th>Actions</th></tr>
+  {% for v in v60 %}
+  <tr>
+    <td>{{v.id}}</td>
+    <td>{{v.user_id}}</td>
+    <td>{{v.coffee}}</td>
+    <td><a class="action" href="/admin/delete/v60/{{v.id}}">Delete</a></td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<!-- MILK -->
+<h2 class="section-title">Milk Logs</h2>
+<div class="card">
+<table>
+  <tr><th>ID</th><th>User</th><th>Type</th><th>Actions</th></tr>
+  {% for m in milk %}
+  <tr>
+    <td>{{m.id}}</td>
+    <td>{{m.user_id}}</td>
+    <td>{{m.milk_type}}</td>
+    <td><a class="action" href="/admin/delete/milk/{{m.id}}">Delete</a></td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<!-- WATER -->
+<h2 class="section-title">Water Profiles</h2>
+<div class="card">
+<table>
+  <tr><th>ID</th><th>User</th><th>GH</th><th>Actions</th></tr>
+  {% for w in water %}
+  <tr>
+    <td>{{w.id}}</td>
+    <td>{{w.user_id}}</td>
+    <td>{{w.gh}}</td>
+    <td><a class="action" href="/admin/delete/water/{{w.id}}">Delete</a></td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<!-- JOURNAL -->
+<h2 class="section-title">Journal Entries</h2>
+<div class="card">
+<table>
+  <tr><th>ID</th><th>User</th><th>Title</th><th>Actions</th></tr>
+  {% for j in journal %}
+  <tr>
+    <td>{{j.id}}</td>
+    <td>{{j.user_id}}</td>
+    <td>{{j.title}}</td>
+    <td><a class="action" href="/admin/delete/journal/{{j.id}}">Delete</a></td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+</body>
+</html>
