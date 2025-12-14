@@ -507,8 +507,9 @@ function renderEspresso() {
       <div class='record-card'>
         <div class='badge'>Espresso</div>
         <h3>${d(e,"coffee")}</h3>
-        <p>Dose: ${d(e,"dose")}g — Yield: ${d(e,"yield")}g</p>
-        <p>Time: ${d(e,"time")}s | Grind: ${d(e,"grind")}</p>
+        <p>Dose: ${d(e,"dose")}g — Yield: ${d(e,"yield_out")}g</p>
+<p>Time: ${d(e,"time_sec")}s | Grind: ${d(e,"grind")}</p>
+
         <p style="color:var(--accent)">${d(e,"ai_tip","")}</p>
         <p>${d(e,"notes","")}</p>
       </div>`;
