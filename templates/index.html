@@ -493,8 +493,9 @@ let journalData  = JSON.parse(`{{ journal | tojson | safe }}`);
 
 /* SAFE JSON ACCESSOR */
 function d(row, key, fallback="—") {
-  return row?.data?.[key] ?? fallback;
+  return row?.[key] ?? fallback;
 }
+
 
 /* ================= ESPRESSO ================= */
 function renderEspresso() {
