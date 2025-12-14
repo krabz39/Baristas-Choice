@@ -491,23 +491,30 @@ let milkData     = JSON.parse(`{{ milk | tojson | safe }}`);
 let waterData    = JSON.parse(`{{ water | tojson | safe }}`);
 let journalData  = JSON.parse(`{{ journal | tojson | safe }}`);
 
-/* RENDERERS */
+/* SAFE JSON ACCESSOR */
+function d(row, key, fallback="—") {
+  return row?.data?.[key] ?? fallback;
+}
+
+/* ================= ESPRESSO ================= */
 function renderEspresso() {
   let box = document.getElementById("espresso-list");
   box.innerHTML = "";
+
   espressoData.forEach(e=>{
     box.innerHTML += `
       <div class='record-card'>
         <div class='badge'>Espresso</div>
-        <h3>${e.coffee}</h3>
-        <p>Dose: ${e.dose}g — Yield: ${e.yield_out}g</p>
-        <p>Time: ${e.time_sec}s | Grind: ${e.grind}</p>
-        <p><b>Diagnosis:</b> ${e.diagnostics}</p>
-        <p>${e.notes}</p>
+        <h3>${d(e,"coffee")}</h3>
+        <p>Dose: ${d(e,"dose")}g — Yield: ${d(e,"yield")}g</p>
+        <p>Time: ${d(e,"time")}s | Grind: ${d(e,"grind")}</p>
+        <p style="color:var(--accent)">${d(e,"ai_tip","")}</p>
+        <p>${d(e,"notes","")}</p>
       </div>`;
   });
 }
 
+/* ================= V60 ================= */
 function renderV60() {
   let b=document.getElementById("v60-list");
   b.innerHTML="";
@@ -515,14 +522,15 @@ function renderV60() {
     b.innerHTML+=`
       <div class='record-card'>
         <div class='badge'>V60</div>
-        <h3>${v.coffee}</h3>
-        <p>Dose: ${v.dose}g | Water: ${v.water}ml</p>
-        <p>Drawdown: ${v.drawdown}s</p>
-        <p><b>Rating:</b> ${v.rating}</p>
+        <h3>${d(v,"coffee")}</h3>
+        <p>Dose: ${d(v,"dose")}g | Water: ${d(v,"water")}ml</p>
+        <p>Ratio: ${d(v,"ratio")} | Drawdown: ${d(v,"drawdown")}s</p>
+        <p><b>Rating:</b> ${d(v,"rating","—")}</p>
       </div>`;
   });
 }
 
+/* ================= MILK ================= */
 function renderMilk(){
   let b=document.getElementById("milk-list");
   b.innerHTML="";
@@ -530,13 +538,14 @@ function renderMilk(){
     b.innerHTML+=`
       <div class='record-card'>
         <div class='badge'>Milk</div>
-        <h3>${m.milk_type}</h3>
-        <p>Pitcher: ${m.pitcher}</p>
-        <p>Stretch: ${m.stretch_time}s</p>
+        <h3>${d(m,"milk_type")}</h3>
+        <p>Pitcher: ${d(m,"pitcher")}</p>
+        <p>Stretch: ${d(m,"stretch_time")}s | Temp: ${d(m,"target_temp")}°C</p>
       </div>`;
   });
 }
 
+/* ================= WATER ================= */
 function renderWater() {
   let b=document.getElementById("water-list");
   b.innerHTML="";
@@ -544,11 +553,13 @@ function renderWater() {
     b.innerHTML+=`
       <div class='record-card'>
         <div class='badge'>Water</div>
-        <p>GH: ${w.gh} | KH: ${w.kh} | TDS: ${w.tds}</p>
+        <p>GH: ${d(w,"gh")} | KH: ${d(w,"kh")} | TDS: ${d(w,"tds")}</p>
+        <p>${d(w,"notes","")}</p>
       </div>`;
   });
 }
 
+/* ================= JOURNAL ================= */
 function renderJournal(){
   let b=document.getElementById("journal-list");
   b.innerHTML="";
@@ -556,9 +567,9 @@ function renderJournal(){
     b.innerHTML+=`
       <div class='record-card'>
         <div class='badge'>Journal</div>
-        <h3>${j.title}</h3>
-        <p>${j.body}</p>
-        <p style='color:var(--accent)'>Tags: ${j.tags}</p>
+        <h3>${d(j,"title")}</h3>
+        <p>${d(j,"body")}</p>
+        <p style='color:var(--accent)'>Tags: ${d(j,"tags","")}</p>
       </div>`;
   });
 }
@@ -570,6 +581,15 @@ function updateDashboard(){
   document.getElementById("dash-milk").innerText = milkData.length;
   document.getElementById("dash-journal").innerText = journalData.length;
 }
+
+/* INIT */
+renderEspresso();
+renderV60();
+renderMilk();
+renderWater();
+renderJournal();
+updateDashboard();
+
 
 /* CHARTS */
 function skillTracker(){
